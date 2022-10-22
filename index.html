@@ -15,10 +15,12 @@
     <script src="https://threejs.org/build/three.js"></script>
     <script src="https://threejs.org/examples/js/controls/OrbitControls.js"></script>
     <!-- obj loader -->
+    <script src="https://threejs.org/examples/js/loaders/OBJLoader.js"></script>
     <script src="https://threejs.org/examples/js/loaders/GLTFLoader.js"></script>
     <!-- <script src="https://threejs.org/examples/js/controls/FlyControls.js"></script> -->
     <script type="module">
         var scene = new THREE.Scene();
+        scene.add(new THREE.AmbientLight(0x404040));
         // set scene color to dark blue
         scene.background = new THREE.Color(0x13146e);
         var camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -39,7 +41,16 @@
         controls.autoForward = true;
         controls.dragToLook = true;
 
-        async function loadObj(path) {
+        function loadObj(path) {
+            return new Promise((resolve, reject) => {
+                var loader = new THREE.OBJLoader();
+                loader.load(path, (object) => {
+                    resolve(object);
+                });
+            });
+        }
+
+        function loadGLTF(path) {
             return new Promise((resolve, reject) => {
                 var loader = new THREE.GLTFLoader();
                 loader.load(path, (object) => {
@@ -47,61 +58,57 @@
                 });
             });
         }
-
-        const shark = await loadObj('../res/models/shark.glb');
+        console.log("loading shark");
+        const shark = await loadGLTF('../res/models/shark.glb');
+        console.log(shark);
         // move shark up y axis
-        shark.position.y = 2;
+        // shark.position.y = 2;
         // add material to shark
-        shark.traverse((child) => {
-            if (child instanceof THREE.Mesh) {
-                child.material = material;
-            }
-        });
 
-        scene.add(shark);
+        scene.add(shark.scene);
 
-        shark.rotation.y = Math.PI / 2;
+        shark.scene.rotation.y = Math.PI / 2;
 
         function getInput() {
             var lookingVector = new THREE.Vector3(0, 0, -1);
             lookingVector.applyQuaternion(camera.quaternion);
 
-            var cubeRotation = shark.rotation;
+            var cubeRotation = shark.scene.rotation;
             // cubeRotation.y += Math.PI/2;
 
             if (keyState[0] == 1) { // move left
-                shark.rotation.y += 0.1;
+                shark.scene.rotation.y += 0.1;
                 camera.rotation.y += 0.1;
             }
             if (keyState[1] == 1) { // move forward
-                shark.position.x -= Math.sin(cubeRotation.y + Math.PI / 2 % 10) * 1;
-                shark.position.z -= Math.cos(cubeRotation.y + Math.PI / 2 % 10) * 1;
-                shark.position.y -= Math.sin(cubeRotation.x % 10) * 1;
+                shark.scene.position.x -= Math.sin(cubeRotation.y + Math.PI / 2 % 10) * 1;
+                shark.scene.position.z -= Math.cos(cubeRotation.y + Math.PI / 2 % 10) * 1;
+                shark.scene.position.y -= Math.sin(cubeRotation.x % 10) * 1;
 
                 camera.position.x -= Math.sin(cubeRotation.y + Math.PI / 2 % 10) * 1;
                 camera.position.z -= Math.cos(cubeRotation.y + Math.PI / 2 % 10) * 1;
             }
             if (keyState[2] == 1) { // move right
-                shark.rotation.y -= 0.1;
+                shark.scene.rotation.y -= 0.1;
                 camera.rotation.y -= 0.1;
             }
             if (keyState[3] == 1) { // move backwards
-                shark.position.x += Math.sin(cubeRotation.y + Math.PI / 2 % 10) * 1;
-                shark.position.z += Math.cos(cubeRotation.y + Math.PI / 2 % 10) * 1;
-                shark.position.y += Math.sin(cubeRotation.x % 10) * 1;
+                shark.scene.position.x += Math.sin(cubeRotation.y + Math.PI / 2 % 10) * 1;
+                shark.scene.position.z += Math.cos(cubeRotation.y + Math.PI / 2 % 10) * 1;
+                shark.scene.position.y += Math.sin(cubeRotation.x % 10) * 1;
 
                 camera.position.x += Math.sin(cubeRotation.y + Math.PI / 2 % 10) * 1;
                 camera.position.z += Math.cos(cubeRotation.y + Math.PI / 2 % 10) * 1;
             }
             if (keyState[4] == 1) { // go up
-                if (shark.rotation.x > - Math.PI / 4) {
-                    shark.rotation.x -= 0.1;
+                if (shark.scene.rotation.x > - Math.PI / 4) {
+                    shark.scene.rotation.x -= 0.1;
                     camera.rotation.x -= 0.1;
                 }
             }
             if (keyState[5] == 1) { // go down
-                if (shark.rotation.x < Math.PI / 4) {
-                    shark.rotation.x += 0.1;
+                if (shark.scene.rotation.x < Math.PI / 4) {
+                    shark.scene.rotation.x += 0.1;
                     camera.rotation.x += 0.1;
                 }
 
@@ -109,21 +116,21 @@
             }
 
 
-            // console.log(shark.rotation.y);
+            // console.log(shark.scene.rotation.y);
 
             // get vector from camera to shark
             var vector = new THREE.Vector3();
-            vector.subVectors(shark.position, camera.position);
+            vector.subVectors(shark.scene.position, camera.position);
 
 
-            controls.target = shark.position;
+            controls.target = shark.scene.position;
             controls.update();
         }
 
-        var cubeRotation = shark.rotation;
-        camera.position.x = shark.position.x - Math.sin(cubeRotation.y / 100 % 10) * 15;
-        camera.position.z = shark.position.z - Math.cos(cubeRotation.y / 100 % 10) * 15;
-        camera.position.y = shark.position.y + 10;
+        var cubeRotation = shark.scene.rotation;
+        camera.position.x = shark.scene.position.x - Math.sin(cubeRotation.y / 100 % 10) * 15;
+        camera.position.z = shark.scene.position.z - Math.cos(cubeRotation.y / 100 % 10) * 15;
+        camera.position.y = shark.scene.position.y + 10;
         
         const keyState = [0, 0, 0, 0, 0, 0];
 
