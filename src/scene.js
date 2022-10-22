@@ -4,6 +4,14 @@ var clock = new THREE.Clock();
 var delta = 0;
 var elapsedTime = 0;
 
+const objLoader = new OBJLoader()
+objLoader.load(
+    'https://raw.githubusercontent.com/mrdoob/three.js/master/examples/models/obj/cerberus/Cerberus.obj',
+    (object) => {
+        scene.add(object)
+    }
+)
+
 var renderer = new THREE.WebGLRenderer();
 renderer.setSize( window.innerWidth, window.innerHeight );
 document.body.appendChild( renderer.domElement );
@@ -28,16 +36,22 @@ function getInput(){
 
     if ( keyState[0] == 1 ) { // move left
         cube.rotation.y += 0.1;
+        camera.rotation.y += 0.1;
     }
     if ( keyState[1] == 1 ) { // move forward
+        console.log("izae");
         cube.position.x += Math.sin(cubeRotation.y % 10) * 1;
         cube.position.z += Math.cos(cubeRotation.y % 10) * 1;
+        cube.position.y -= Math.sin(cubeRotation.x % 10) * 1;
         
         camera.position.x += Math.sin(cubeRotation.y % 10) * 1;
         camera.position.z += Math.cos(cubeRotation.y % 10) * 1;
+        camera.position.y -= Math.sin(cubeRotation.x % 10) * 1;
+
     }
     if ( keyState[2] == 1 ) { // move right
         cube.rotation.y -= 0.1;
+        camera.rotation.y -= 0.1;
     }
     if ( keyState[3] == 1 ) { // move backwards
         cube.position.x -= Math.sin(cubeRotation.y % 10) * 1;
@@ -47,10 +61,19 @@ function getInput(){
         camera.position.z -= Math.cos(cubeRotation.y % 10) * 1;
     }
     if ( keyState[4] == 1 ) { // go up
-        cube.position.y += 1;
+        if (cube.rotation.x > - Math.PI / 4) {
+            cube.rotation.x -= 0.1;
+            camera.rotation.x -= 0.1;
+        }
+        // console.log(cube.rotation.x);
     }
     if ( keyState[5] == 1 ) { // go down
-        cube.position.y -= 1;
+        if (cube.rotation.x < Math.PI / 4) {
+            cube.rotation.x += 0.1;
+            camera.rotation.x += 0.1;
+        }
+
+        // cube.rotation.x += 0.1;
     }
 
     // move camera behind cube
@@ -63,14 +86,12 @@ function getInput(){
 }
 
 
-
-camera.position.z = 5;
 const keyState = [0, 0, 0, 0, 0, 0];
 
 function keyUpdate(event, value, keyState){
-    console.log(event);
+    // console.log(event);
     var keyCode = event.keyCode;
-    console.log("key update " + value + " " + keyCode);
+    // console.log("key update " + value + " " + keyCode);
     if (keyCode == 81) { // move left
         keyState[0] = value;
     } 
