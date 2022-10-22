@@ -1,0 +1,22 @@
+{
+  "name": "kamagoshark",
+  "authors": [
+    "Venceslas Duet",
+    "Taha Belkhiri"
+  ],
+  "description": "PixelJam Oct 2022 - Theme AbyZZes",
+  "main": "game.ts",
+  "license": "None",
+  "homepage": "",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "threejs": "*"
+  }
+}

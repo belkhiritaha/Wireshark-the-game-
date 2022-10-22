@@ -1,2 +1,5 @@
 .vscode
 **/*.blend1
+bower_components
+typings
+game.js
