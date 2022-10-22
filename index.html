@@ -77,8 +77,8 @@
             // cubeRotation.y += Math.PI/2;
 
             if (keyState[0] == 1) { // move left
-                shark.scene.rotation.y += 0.1;
-                camera.rotation.y += 0.1;
+                shark.scene.rotation.y += 0.01;
+                camera.rotation.y += 0.01;
             }
             if (keyState[1] == 1) { // move forward
                 shark.scene.position.x -= Math.sin(cubeRotation.y + Math.PI / 2 % 10) * 1;
@@ -89,8 +89,8 @@
                 camera.position.z -= Math.cos(cubeRotation.y + Math.PI / 2 % 10) * 1;
             }
             if (keyState[2] == 1) { // move right
-                shark.scene.rotation.y -= 0.1;
-                camera.rotation.y -= 0.1;
+                shark.scene.rotation.y -= 0.01;
+                camera.rotation.y -= 0.01;
             }
             if (keyState[3] == 1) { // move backwards
                 shark.scene.position.x += Math.sin(cubeRotation.y + Math.PI / 2 % 10) * 1;
@@ -102,14 +102,14 @@
             }
             if (keyState[4] == 1) { // go up
                 if (shark.scene.rotation.x > - Math.PI / 4) {
-                    shark.scene.rotation.x -= 0.1;
-                    camera.rotation.x -= 0.1;
+                    shark.scene.rotation.x -= 0.01;
+                    camera.rotation.x -= 0.01;
                 }
             }
             if (keyState[5] == 1) { // go down
                 if (shark.scene.rotation.x < Math.PI / 4) {
-                    shark.scene.rotation.x += 0.1;
-                    camera.rotation.x += 0.1;
+                    shark.scene.rotation.x += 0.01;
+                    camera.rotation.x += 0.01;
                 }
 
                 // cube.rotation.x += 0.1;
@@ -213,8 +213,21 @@
             scene.add(cube);
         }
 
-        generateCube(0, 0);
-        generateCube(0, 1);
+        function generatePlane(width, height, color) {
+            const geometry = new THREE.BoxGeometry(5, 5, 5);
+            const material = new THREE.MeshBasicMaterial({ color: color });
+            for (var i = 0; i < width; i++) {
+                for (var j = 0; j < height; j++) {
+                    const cube = new THREE.Mesh(geometry, material);
+                    cube.position.x = i * 5;
+                    cube.position.y = Math.cos(i) * 5;
+                    cube.position.z = j * 5;
+                    scene.add(cube);
+                }
+            }
+        }
+
+        generatePlane(100, 100, 0x00ff00);
 
 
         function update() {
@@ -238,6 +251,12 @@
             renderer.render(scene, camera);
             itteration++;
             // console.log(elapsedTime);
+            shark.scene.position.x -= Math.sin(cubeRotation.y + Math.PI / 2 % 10) * 0.5;
+            shark.scene.position.z -= Math.cos(cubeRotation.y + Math.PI / 2 % 10) * 0.5;
+            shark.scene.position.y -= Math.sin(cubeRotation.x % 10) * 0.5;
+
+            camera.position.x -= Math.sin(cubeRotation.y + Math.PI / 2 % 10) * 0.5;
+            camera.position.z -= Math.cos(cubeRotation.y + Math.PI / 2 % 10) * 0.5;
         };
 
 
