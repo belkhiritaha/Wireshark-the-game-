@@ -81,40 +81,21 @@
                 camera.rotation.y += 0.01;
             }
             if (keyState[1] == 1) { // move forward
-                shark.scene.position.x -= Math.sin(cubeRotation.y + Math.PI / 2 % 10) * 1;
-                shark.scene.position.z -= Math.cos(cubeRotation.y + Math.PI / 2 % 10) * 1;
-                shark.scene.position.y -= Math.sin(cubeRotation.x % 10) * 1;
-
-                camera.position.x -= Math.sin(cubeRotation.y + Math.PI / 2 % 10) * 1;
-                camera.position.z -= Math.cos(cubeRotation.y + Math.PI / 2 % 10) * 1;
+                if (shark.scene.rotation.x > - Math.PI / 4) {
+                    shark.scene.rotation.x -= 0.01;
+                    camera.rotation.x -= 0.01;
+                }
             }
             if (keyState[2] == 1) { // move right
                 shark.scene.rotation.y -= 0.01;
                 camera.rotation.y -= 0.01;
             }
             if (keyState[3] == 1) { // move backwards
-                shark.scene.position.x += Math.sin(cubeRotation.y + Math.PI / 2 % 10) * 1;
-                shark.scene.position.z += Math.cos(cubeRotation.y + Math.PI / 2 % 10) * 1;
-                shark.scene.position.y += Math.sin(cubeRotation.x % 10) * 1;
-
-                camera.position.x += Math.sin(cubeRotation.y + Math.PI / 2 % 10) * 1;
-                camera.position.z += Math.cos(cubeRotation.y + Math.PI / 2 % 10) * 1;
-            }
-            if (keyState[4] == 1) { // go up
-                if (shark.scene.rotation.x > - Math.PI / 4) {
-                    shark.scene.rotation.x -= 0.01;
-                    camera.rotation.x -= 0.01;
-                }
-            }
-            if (keyState[5] == 1) { // go down
                 if (shark.scene.rotation.x < Math.PI / 4) {
                     shark.scene.rotation.x += 0.01;
                     camera.rotation.x += 0.01;
                 }
-
-                // cube.rotation.x += 0.1;
             }
-
 
             // console.log(shark.scene.rotation.y);
 
@@ -162,7 +143,7 @@
         var inputDown = document.addEventListener('keydown', (event) => { keyUpdate(event, 1, keyState) });
         var inputUp = document.addEventListener('keyup', (event) => { keyUpdate(event, 0, keyState) });
 
-        async function generateFish(n) {
+        async function generateFish(n, x, y , z) {
             const fishList = [];
             for (var i = 0; i < n; i++) {
                 const fish = await loadObj('../res/models/fish.obj');
@@ -177,9 +158,9 @@
 
                 // scale down fish
                 fish.scale.set(0.1, 0.1, 0.1);
-                fish.position.x = Math.random() * 100;
-                fish.position.z = Math.random() * 100;
-                fish.position.y = Math.random() * 10;
+                fish.position.x = x + Math.random() * 50;
+                fish.position.z = y + Math.random() * 50;
+                fish.position.y = z + Math.random() * 10;
                 scene.add(fish);
                 fishList.push(fish);
             }
@@ -188,7 +169,8 @@
             });
         }
 
-        let fishList = await generateFish(10);
+        let fishList = await generateFish(10, 0, 50, 0);
+        let fishList2 = await generateFish(20, 50, 80, 44);
 
 
         function generatePath() {
@@ -227,7 +209,7 @@
             }
         }
 
-        generatePlane(100, 100, 0x00ff00);
+        // generatePlane(100, 100, 0x00ff00);
 
 
         function update() {
@@ -243,10 +225,18 @@
 
             // move fish
             fishList.forEach(fish => {
-                fish.position.x = path(fish, elapsedTime / 100).x;
-                fish.position.z = path(fish, elapsedTime / 100).z;
-                fish.position.y = path(fish, elapsedTime / 100).y;
+                fish.position.x = path(fish, elapsedTime / 1000).x;
+                fish.position.z = path(fish, elapsedTime / 1000).z;
+                fish.position.y = path(fish, elapsedTime / 1000).y;
             });
+
+            fishList2.forEach(fish => {
+                fish.position.x = path(fish, elapsedTime / 1000).x;
+                fish.position.z = path(fish, elapsedTime / 1000).z;
+                fish.position.y = path(fish, elapsedTime / 1000).y;
+            }
+            
+            );
 
             renderer.render(scene, camera);
             itteration++;
