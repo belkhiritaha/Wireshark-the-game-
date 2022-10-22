@@ -20,68 +20,81 @@ controls.rollSpeed = Math.PI / 24;
 controls.autoForward = false;
 controls.dragToLook = false;
 
-
-camera.position.z = 5;
-var input = document.addEventListener('keydown', getInput);
-
-function getInput(event){
-    var keyCode = event.keyCode;
-
-    // get looking vector
+function getInput(){
     var lookingVector = new THREE.Vector3(0, 0, -1);
     lookingVector.applyQuaternion(camera.quaternion);
 
-    // get cube rotation
     var cubeRotation = cube.rotation;
 
-
-    if (keyCode == 81) { // move left
-        // cube.position.x += Math.sin(cubeRotation.y) * 0.1;
-        // cube.position.y += Math.cos(cubeRotation.x) * 0.1;
-
-        // rotate cube
+    if ( keyState[0] == 1 ) { // move left
         cube.rotation.y += 0.1;
     }
-    if (keyCode == 68) { // move right
-        // cube.position.x -= Math.sin(lookingVector.y) * 1;
-        // camera.position.x -= Math.sin(lookingVector.y) * 1;
-
-        // rotate cube
-        cube.rotation.y -= 0.1;
-    }
-    if (keyCode == 90) { // move forward
-        // move in direction of rotation
+    if ( keyState[1] == 1 ) { // move forward
         cube.position.x += Math.sin(cubeRotation.y % 10) * 1;
         cube.position.z += Math.cos(cubeRotation.y % 10) * 1;
-
+        
         camera.position.x += Math.sin(cubeRotation.y % 10) * 1;
         camera.position.z += Math.cos(cubeRotation.y % 10) * 1;
     }
-    if (keyCode == 83) { // move backwards
-    // move in direction of rotation
-
+    if ( keyState[2] == 1 ) { // move right
+        cube.rotation.y -= 0.1;
+    }
+    if ( keyState[3] == 1 ) { // move backwards
         cube.position.x -= Math.sin(cubeRotation.y % 10) * 1;
         cube.position.z -= Math.cos(cubeRotation.y % 10) * 1;
 
         camera.position.x -= Math.sin(cubeRotation.y % 10) * 1;
         camera.position.z -= Math.cos(cubeRotation.y % 10) * 1;
     }
-    if (keyCode == 32) { // go up
+    if ( keyState[4] == 1 ) { // go up
         cube.position.y += 1;
     }
-    if (keyCode == 17) { // go down
+    if ( keyState[5] == 1 ) { // go down
         cube.position.y -= 1;
     }
 
-    // move camera 2 units behind cube
+    // move camera behind cube
     camera.position.x = cube.position.x - Math.sin(cubeRotation.y % 10) * 10;
     camera.position.z = cube.position.z - Math.cos(cubeRotation.y % 10) * 10;
     camera.position.y = cube.position.y + 5;
 
-
     controls.target = cube.position;
     controls.update();
 }
+
+
+
+camera.position.z = 5;
+const keyState = [0, 0, 0, 0, 0, 0];
+
+function keyUpdate(event, value, keyState){
+    console.log(event);
+    var keyCode = event.keyCode;
+    console.log("key update " + value + " " + keyCode);
+    if (keyCode == 81) { // move left
+        keyState[0] = value;
+    } 
+    if (keyCode == 90) { // move forward
+        keyState[1] = value;
+    }
+    if (keyCode == 68) { // move right
+        keyState[2] = value;
+    }
+    if (keyCode == 83) { // move backwards
+        keyState[3] = value;
+    }
+    if (keyCode == 32) { // go up
+        keyState[4] = value;
+    }
+    if (keyCode == 16) { // go down
+        keyState[5] = value;
+    }
+    getInput();
+}
+
+var inputDown = document.addEventListener('keydown', (event) => {keyUpdate(event, 1, keyState)});
+var inputUp = document.addEventListener('keyup', (event) => {keyUpdate(event, 0, keyState)});
+
 
 function createPlane() {
     var geometry = new THREE.PlaneGeometry( 200, 200, 32 );
@@ -121,7 +134,7 @@ let fishList = await generateFish(10);
 
 function generatePath() {
     var path = function ( fish, t ) {
-        var x = fish.position.x + 0.3 * Math.sin( 4 * Math.PI * t ) * Math.cos( 2 * Math.PI * t );
+        var x = fish.position.x + 0.3 * Math.sin( 4 * Math.PI * t ) * Math.cos( Math.PI * t );
         var y = 0;
         var z = fish.position.z + 1 * Math.sin( 9 * Math.PI * t ) * Math.cos( 3 * Math.PI * t );
 
@@ -136,6 +149,7 @@ function generatePath() {
 function update () {
     let itteration = 0;
     requestAnimationFrame( update );
+    getInput();
 
     delta = clock.getDelta();
     // console.log(delta);
