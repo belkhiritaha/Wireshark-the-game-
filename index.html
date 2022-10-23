@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>shark go brrrr</title>
+    <style>
+        body {
+            margin: 0;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="score" style="background-color: rgb(19, 21, 110); width: 100%; margin: auto"></div>
+    <script src="https://threejs.org/build/three.js"></script>
+    <script src="https://threejs.org/examples/js/controls/OrbitControls.js"></script>
+    <!-- obj loader -->
+    <script src="https://threejs.org/examples/js/loaders/OBJLoader.js"></script>
+    <script src="https://threejs.org/examples/js/loaders/GLTFLoader.js"></script>
+    <!-- perlin noise -->
+    <script src="perlin.js"></script>
+    <!-- <script src="https://threejs.org/examples/js/controls/FlyControls.js"></script> -->
+    <script type="module">
+        var scene = new THREE.Scene();
+        // set scene color to dark blue
+        scene.background = new THREE.Color(0x13146e);
+        scene.fog = new THREE.Fog(0x13146e, 0, 750);
+
+        var camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        var clock = new THREE.Clock();
+        var delta = 0;
+        var elapsedTime = 0;
+        var score = 0;
+        document.getElementById("score").innerHTML = "Score: " + score;
+
+        var renderer = new THREE.WebGLRenderer();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        var material = new THREE.MeshBasicMaterial({ color: 0x606469, shininess: 0 });
+
+        var lookingVector = new THREE.Vector3(0, 0, -1);
+        camera.position.z = -10;
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.movementSpeed = 10;
+        controls.rollSpeed = Math.PI / 2;
+        controls.autoForward = true;
+        controls.dragToLook = true;
+
+        function loadObj(path) {
+            return new Promise((resolve, reject) => {
+                var loader = new THREE.OBJLoader();
+                loader.load(path, (object) => {
+                    resolve(object);
+                });
+            });
+        }
+
+        function loadGLTF(path) {
+            return new Promise((resolve, reject) => {
+                var loader = new THREE.GLTFLoader();
+                loader.load(path, (object) => {
+                    resolve(object);
+                });
+            });
+        }
+
+        console.log("loading shark");
+        const shark = await loadGLTF('../res/models/shark.glb');
+        console.log(shark);
+        // move shark up y axis
+        // shark.position.y = 2;
+        // add material to shark
+
+        scene.add(shark.scene);
+
+        shark.scene.rotation.y = Math.PI / 2;
+
+        function getInput() {
+            var lookingVector = new THREE.Vector3(0, 0, -1);
+            lookingVector.applyQuaternion(camera.quaternion);
+
+            var cubeRotation = shark.scene.rotation;
+            // cubeRotation.y += Math.PI/2;
+
+            if (keyState[0] == 1) { // move left
+                shark.scene.rotation.y += 0.01;
+            }
+            if (keyState[1] == 1) { // move forward
+                if (shark.scene.rotation.x > - Math.PI / 4) {
+                    shark.scene.rotation.x -= 0.01;
+                }
+            }
+            if (keyState[2] == 1) { // move right
+                shark.scene.rotation.y -= 0.01;
+            }
+            if (keyState[3] == 1) { // move backwards
+                if (shark.scene.rotation.x < Math.PI / 4) {
+                    shark.scene.rotation.x += 0.01;
+                }
+            }
+
+            // console.log(shark.scene.rotation.y);
+
+
+            controls.target = shark.scene.position;
+            controls.update();
+        }
+        
+
+        var cubeRotation = shark.scene.rotation;
+        
+        const keyState = [0, 0, 0, 0, 0, 0];
+
+        function keyUpdate(event, value, keyState) {
+            // console.log(event);
+            var keyCode = event.keyCode;
+            // console.log("key update " + value + " " + keyCode);
+            if (keyCode == 81) { // move left
+                keyState[0] = value;
+            }
+            if (keyCode == 90) { // move forward
+                keyState[1] = value;
+            }
+            if (keyCode == 68) { // move right
+                keyState[2] = value;
+            }
+            if (keyCode == 83) { // move backwards
+                keyState[3] = value;
+            }
+            if (keyCode == 32) { // go up
+                keyState[4] = value;
+            }
+            if (keyCode == 16) { // go down
+                keyState[5] = value;
+            }
+            getInput();
+        }
+
+        var inputDown = document.addEventListener('keydown', (event) => { keyUpdate(event, 1, keyState) });
+        var inputUp = document.addEventListener('keyup', (event) => { keyUpdate(event, 0, keyState) });
+
+        async function generateFish(n, x, y , z) {
+            const fishList = [];
+            for (var i = 0; i < n; i++) {
+                const fish = await loadGLTF('../res/models/piranhahigh.gltf');
+
+                const randMaterial = new THREE.MeshBasicMaterial({ color: Math.random() * 0xffffff});
+                randMaterial.flatShading = true;
+
+
+                // scale up fish
+                fish.scene.scale.set(5, 5, 5);
+                fish.scene.position.x = x + Math.random() * 50;
+                fish.scene.position.z = y + Math.random() * 50;
+                fish.scene.position.y = z + Math.random() * 10;
+                scene.add(fish.scene);
+                fishList.push(fish.scene);
+            }
+            return new Promise((resolve, reject) => {
+                resolve(fishList);
+            });
+        }
+        noise.seed(Math.random());
+
+        function generatePath() {
+            var path = function (fish, t) {
+                var y = fish.position.y + Math.sin(t / 100) * 0.5;
+                var z = fish.position.z + 0.1;
+                var x = fish.position.x + Math.sin(t / 100) * 0.5;
+                return new THREE.Vector3(x, y, z);
+            }
+            return path;
+        }
+
+
+        async function generatePlane(width, height, color) {
+            const geometry = new THREE.PlaneBufferGeometry(width, height, 200, 200);
+            const material = new THREE.MeshLambertMaterial( { 
+                                                                color: color,
+                                                                specular: 0x000000
+                                                            } ) 
+            material.flatShading = true
+            const terrain = new THREE.Mesh(geometry, material);
+            terrain.rotation.x = -Math.PI / 2;
+
+            terrain.position.y = -100;
+
+            var peak = 100;
+            var smoothing = 300;
+            var vertices = terrain.geometry.attributes.position.array;
+            for (var i = 0; i <= vertices.length; i+=3) {
+                var value = noise.simplex2(vertices[i] / smoothing, vertices[i + 1] / smoothing);
+                vertices[i+2] = value * peak;
+            }
+            terrain.geometry.attributes.position.needsUpdate = true;
+            terrain.geometry.computeVertexNormals();
+
+            scene.add(terrain);
+        }
+
+        await generatePlane(10000, 10000, 0xC0B5AB);
+
+        // ADD AmbientLight, and reduce the intensity
+        var light = new THREE.AmbientLight(0x404040);
+        light.intensity = 1;
+        scene.add(light);
+        
+        // ADD a Point Light and position the light away from the camera
+        var pointLight = new THREE.PointLight('white');
+        // set intensity
+        pointLight.intensity = 1;
+        pointLight.position.set(20, 30, 40);
+        pointLight.add(new THREE.Mesh(
+                new THREE.SphereGeometry(1, 10, 10),
+                new THREE.MeshBasicMaterial({
+                    color: 'white'
+                })));
+        scene.add(pointLight);
+
+        let fishListList = [];
+
+        for (var i = 0; i < 10; i++) {
+            fishListList.push(await generateFish(10, Math.random() * 1000, Math.random() * 1000, Math.random() * 100));
+        }
+
+        function update() {
+            let itteration = 0;
+            requestAnimationFrame(update);
+            getInput();
+
+            delta = clock.getDelta();
+            elapsedTime += delta;
+
+            let path = generatePath();
+
+            for (var i = 0; i < fishListList.length; i++) {
+                let fishList = fishListList[i];
+                let resetFish = true;
+                for (var i = 0; i < fishList.length; i++) {
+                    let fish = fishList[i];
+                    if (fishList[i].position.distanceTo(shark.scene.position) < 80) {
+                        resetFish = false;
+                    }
+                    if (fish.position.distanceTo(shark.scene.position) < 10){
+                        fish.position.x = shark.scene.position.x + Math.random() * 300;
+                        fish.position.z = shark.scene.position.z + Math.random() * 300;
+                        fish.position.y = shark.scene.position.y + Math.random() * 20;
+                        score += 1;
+                        document.getElementById("score").innerHTML = "Score: " + score;
+                    }
+                    else {
+                        fish.position.x = path(fish, elapsedTime / 30000).x;
+                        fish.position.z = path(fish, elapsedTime / 30000).z;
+                        fish.position.y = path(fish, elapsedTime / 30000).y;
+                    }
+                }
+
+                if (resetFish){
+                    for (let i = 0; i < fishList.length; i++){
+                        fishList[i].position.x = shark.scene.position.x + Math.random() * 300;
+                        fishList[i].position.z = shark.scene.position.z + Math.random() * 300;
+                        fishList[i].position.y = shark.scene.position.y + Math.random() * 20;
+                    }
+                }
+            }
+
+
+            renderer.render(scene, camera);
+            itteration++;
+            shark.scene.position.x -= Math.sin(cubeRotation.y + Math.PI / 2 % 10) ;
+            shark.scene.position.z -= Math.cos(cubeRotation.y + Math.PI / 2 % 10) ;
+            shark.scene.position.y -= Math.sin(cubeRotation.x % 10) ;
+
+            let rot = (shark.scene.rotation.y + Math.PI / 2) ;
+
+            if (rot > Math.PI && rot < 2 * Math.PI) {
+                rot = rot - 2 * Math.PI;
+            }
+            
+            if (rot > -Math.PI && rot < Math.PI / 2) {
+                camera.position.x = shark.scene.position.x + 10 * Math.sin(rot);
+                
+            }
+            
+            camera.position.x = shark.scene.position.x + 10 * Math.sin(rot);
+            camera.position.z = shark.scene.position.z - 10 ;
+            camera.position.y = shark.scene.position.y + 2;
+
+            camera.lookAt(shark.scene.position);
+
+            pointLight.position.set(shark.scene.position.x, shark.scene.position.y + 20, shark.scene.position.z);
+        };
+
+
+        update();
+
+// renderer.render( scene, camera );
+// animate();
+    </script>
+</body>
+
+</html>
